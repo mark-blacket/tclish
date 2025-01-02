@@ -1,0 +1,4 @@
+(executable
+  (public_name tclish)
+  (name main)
+  (libraries tclish))
