@@ -1,10 +1,11 @@
 [@@@warning "-8"]
 
+let eval env = function str :: [] -> Interp.eval env str
+let subst env = function str :: [] -> Interp.subst env str
+
 let set env = function
     | name :: [] -> Env.var env name
     | name :: value :: [] -> Env.set_var env name value; value
-
-let subst env = function str :: [] -> Interp.subst env str
 
 let proc env = function name :: args :: body :: [] ->
     let args = Interp.split args in
@@ -17,6 +18,11 @@ let proc env = function name :: args :: body :: [] ->
         with Interp.Return s -> s in
     Env.set_proc env name arity arity proc; ""
 
+let puts _   = function str :: [] -> print_endline str; ""
+let gets env = function str :: [] ->
+    let s = read_line () in
+    Env.set_var env str s; s
+
 let rec if_ env = function
     | [] -> ""
     | str :: [] -> Interp.eval env str
@@ -25,16 +31,16 @@ let rec if_ env = function
         then if_ env rest
         else Interp.eval env str
 
-let rec while_ env = function (cond :: body :: []) as strs ->
+let rec while_ env = function (cond :: body :: []) as args ->
     if Interp.eval env cond <> ""
     then begin
         begin try
             Interp.eval env body
         with
             | Interp.Break -> ""
-            | Interp.Continue -> while_ env strs 
+            | Interp.Continue -> while_ env args
         end |> ignore;
-        while_ env strs
+        while_ env args
     end else ""
 
 let for_ env = function start :: test :: next :: body :: [] ->
@@ -61,9 +67,12 @@ let continue _ = function [] -> Interp.Continue |> raise
 
 let defaults env =
     let m = Int.max_int in
-    [ "set",      1, 2, set
+    [ "eval",     1, 1, eval
     ; "subst",    1, 1, subst
+    ; "set",      1, 2, set
     ; "proc",     3, 3, proc
+    ; "puts",     1, 1, puts
+    ; "gets",     1, 1, gets
     ; "if",       2, m, if_
     ; "while",    2, 2, while_
     ; "for",      4, 4, for_
