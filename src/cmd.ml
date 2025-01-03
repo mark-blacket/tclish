@@ -65,7 +65,7 @@ let return _ = function
 let break _ =    function [] -> Interp.Break    |> raise
 let continue _ = function [] -> Interp.Continue |> raise
 
-let defaults env =
+let defaults =
     let m = Int.max_int in
     [ "eval",     1, 1, eval
     ; "subst",    1, 1, subst
@@ -78,5 +78,4 @@ let defaults env =
     ; "for",      4, 4, for_
     ; "return",   0, 1, return
     ; "break",    0, 0, break
-    ; "continue", 0, 0, continue
-    ] |> List.iter (fun (n, l, r, p) -> Env.set_proc env n l r p)
+    ; "continue", 0, 0, continue ]

@@ -1,18 +1,16 @@
 open Printf
 module Dict = Hashtbl.Make(String)
 
-type proc =
-    { arity_min : int
-    ; arity_max : int
-    ; proc : t -> string list -> string }
-and t =
+type t =
     { vars : string Dict.t
     ; procs : proc Dict.t
     ; outer : t option
     ; mutable ret : string }
-
-let create () = { vars = Dict.create 32 ; procs = Dict.create 8 ; outer = None ; ret = "" }
-let create_inner env = { vars = Dict.create 8 ; procs = Dict.create 1 ; outer = Some env ; ret = "" }
+and proc =
+    { arity_min : int
+    ; arity_max : int
+    ; cmd : cmd }
+and cmd = t -> string list -> string
 
 let return env =
     let r = env.ret in
@@ -27,8 +25,8 @@ let rec reset env =
         | None -> ()
 
 let set_var env k v = Dict.replace env.vars k v
-let set_proc env k arity_min arity_max proc =
-    Dict.replace env.procs k { arity_min ; arity_max ; proc }
+let set_proc env k arity_min arity_max cmd =
+    Dict.replace env.procs k { arity_min ; arity_max ; cmd }
 
 let rec var env k = match Dict.find_opt env.vars k with
     | Some v -> v
@@ -41,7 +39,7 @@ let rec proc env k args = match Dict.find_opt env.procs k with
         let l = List.length args in
         if v.arity_min <= l && v.arity_max >= l
         then
-            env.ret <- v.proc env args
+            env.ret <- v.cmd env args
         else
             failwith @@ if v.arity_min = v.arity_max
             then
@@ -54,3 +52,10 @@ let rec proc env k args = match Dict.find_opt env.procs k with
         | Some env -> proc env k args
         | None -> sprintf "Procedure %s not found" k |> failwith
 
+let create procs =
+    let env = { vars = Dict.create 32 ; procs = Dict.create 8 ; outer = None ; ret = "" } in
+    List.iter (fun (name, arity_min, arity_max, proc) ->
+        set_proc env name arity_min arity_max proc) procs;
+    env
+
+let create_inner env = { vars = Dict.create 8 ; procs = Dict.create 1 ; outer = Some env ; ret = "" }

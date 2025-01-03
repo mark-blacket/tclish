@@ -1,10 +1,13 @@
-val set      : Env.t -> string list -> string
-val subst    : Env.t -> string list -> string
-val proc     : Env.t -> string list -> string
-val if_      : Env.t -> string list -> string
-val while_   : Env.t -> string list -> string
-val for_     : Env.t -> string list -> string
-val return   : Env.t -> string list -> string
-val break    : Env.t -> string list -> string
-val continue : Env.t -> string list -> string
-val defaults : Env.t -> unit
+val eval     : Env.cmd
+val subst    : Env.cmd
+val set      : Env.cmd
+val proc     : Env.cmd
+val puts     : Env.cmd
+val gets     : Env.cmd
+val if_      : Env.cmd
+val while_   : Env.cmd
+val for_     : Env.cmd
+val return   : Env.cmd
+val break    : Env.cmd
+val continue : Env.cmd
+val defaults : (string * int * int * Env.cmd) list

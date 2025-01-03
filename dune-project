@@ -5,5 +5,5 @@
 
 (package
  (name tclish)
- (synopsis "Small embeddable TCL interpreter")
+ (synopsis "Small embeddable TCL(ish) interpreter")
  (depends ocaml dune))

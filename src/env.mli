@@ -1,6 +1,7 @@
 type t
+type cmd = t -> string list -> string
 
-val create : unit -> t
+val create : (string * int * int * cmd) list -> t
 val create_inner : t -> t
 val reset : t -> unit
 val return : t -> string
