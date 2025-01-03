@@ -5,6 +5,7 @@ type t =
     { vars : string Dict.t
     ; procs : proc Dict.t
     ; outer : t option
+    ; depth : int
     ; mutable ret : string }
 and proc =
     { arity_min : int
@@ -23,6 +24,14 @@ let rec reset env =
     match env.outer with
         | Some env -> reset env
         | None -> ()
+
+let depth env = env.depth
+let with_depth env depth =
+    let rec find env =
+        if env.depth = depth then env else Option.get env.outer |> find in
+    if depth < 0 || depth > env.depth
+    then sprintf "No environment with depth %d" depth |> failwith
+    else find env
 
 let set_var env k v = Dict.replace env.vars k v
 let set_proc env k arity_min arity_max cmd =
@@ -52,10 +61,14 @@ let rec proc env k args = match Dict.find_opt env.procs k with
         | Some env -> proc env k args
         | None -> sprintf "Procedure %s not found" k |> failwith
 
+let new_env v p outer depth =
+    { vars = Dict.create v ; procs = Dict.create p ; outer ; depth ; ret = "" }
+
 let create procs =
-    let env = { vars = Dict.create 32 ; procs = Dict.create 8 ; outer = None ; ret = "" } in
+    let env = new_env 32 8 None 0 in
     List.iter (fun (name, arity_min, arity_max, proc) ->
         set_proc env name arity_min arity_max proc) procs;
     env
 
-let create_inner env = { vars = Dict.create 8 ; procs = Dict.create 1 ; outer = Some env ; ret = "" }
+let create_inner env =
+    env.depth + 1 |> new_env 32 8 @@ Some env

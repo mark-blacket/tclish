@@ -20,6 +20,6 @@ let file env f =
 let () =
     let mode = ref false in
     let spec = ["-i", Arg.Set mode, "Enter interactive mode after executing scripts"] in
-    let env = Env.create Cmd.defaults in
-    Arg.parse spec (fun f -> file env f) "Usage: tclish [-i] [script ...]";
+    let env = Env.create Cmd.list in
+    Arg.parse spec (file env) "Usage: tclish [-i] [script ...]";
     if !mode then repl env
