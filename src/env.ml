@@ -36,6 +36,8 @@ let with_depth env depth =
 let set_var env k v = Dict.replace env.vars k v
 let set_proc env k arity_min arity_max cmd =
     Dict.replace env.procs k { arity_min ; arity_max ; cmd }
+let remove_var env k = Dict.remove env.vars k
+let remove_proc env k = Dict.remove env.procs k
 
 let rec var env k = match Dict.find_opt env.vars k with
     | Some v -> v

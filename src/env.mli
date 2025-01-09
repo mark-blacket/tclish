@@ -9,5 +9,7 @@ val depth : t -> int
 val with_depth : t -> int -> t
 val set_var : t -> string -> string -> unit
 val set_proc : t -> string -> int -> int -> cmd -> unit
+val remove_var : t -> string -> unit
+val remove_proc : t -> string -> unit
 val var : t -> string -> string
 val proc : t -> string -> string list -> unit
