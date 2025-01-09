@@ -111,16 +111,23 @@ let expr_bool op _ args =
         | x :: xs -> expr xs |> op @@ (x <> "") in
     if expr args then "1" else ""
 
-let scmp op _ = function l :: r :: [] -> if op l r then "1" else ""
-let fcmp op _ = function l :: r :: [] ->
-    if op (float_of_string l) (float_of_string r) then "1" else ""
-let ftoi op _ = function x :: [] ->
+let unary_float_to_int op _ = function x :: [] ->
     float_of_string x |> op |> truncate |> string_of_int
-let ftof op _ = function x :: [] ->
+
+let unary_float op _ = function x :: [] ->
     float_of_string x |> op |> string_of_float
-let itoi op _ = function x :: [] ->
+
+let unary_int op _ = function x :: [] ->
     int_of_string x |> op |> string_of_int
-let not_ _ = function b :: [] -> if b = "" then "1" else ""
+
+let unary_bool op _ = function b :: [] ->
+    if b <> "" |> op then "1" else "" 
+
+let string_cmp op _ = function l :: r :: [] ->
+    if op l r then "1" else ""
+
+let float_cmp op _ = function l :: r :: [] ->
+    if op (float_of_string l) (float_of_string r) then "1" else ""
 
 let list =
     let m = Int.max_int in
@@ -151,25 +158,25 @@ let list =
     ; "<<",       2, 2, expr_int ( lsl )
     ; ">>",       2, 2, expr_int ( lsr )
     ; "!>>",      2, 2, expr_int ( asr )
-    ; "~",        1, 1, itoi lnot
-    ; "neg",      1, 1, ftof ( ~-. )
-    ; "abs",      1, 1, ftof Float.abs
-    ; "ceil",     1, 1, ftoi Float.ceil
-    ; "floor",    1, 1, ftoi Float.floor
-    ; "round",    1, 1, ftoi Float.round
-    ; "=",        2, 2, fcmp ( = )
-    ; ">=",       2, 2, fcmp ( >= )
-    ; "<=",       2, 2, fcmp ( <= )
-    ; ">",        2, 2, fcmp ( > )
-    ; "<",        2, 2, fcmp ( < )
-    ; "!=",       2, 2, fcmp ( <> )
-    ; "eq",       2, 2, scmp ( = )
-    ; "ge",       2, 2, scmp ( >= )
-    ; "le",       2, 2, scmp ( <= )
-    ; "gt",       2, 2, scmp ( > )
-    ; "lt",       2, 2, scmp ( < )
-    ; "ne",       2, 2, scmp ( <> )
+    ; "~",        1, 1, unary_int lnot
+    ; "neg",      1, 1, unary_float ( ~-. )
+    ; "abs",      1, 1, unary_float Float.abs
+    ; "ceil",     1, 1, unary_float_to_int Float.ceil
+    ; "floor",    1, 1, unary_float_to_int Float.floor
+    ; "round",    1, 1, unary_float_to_int Float.round
+    ; "=",        2, 2, float_cmp ( = )
+    ; ">=",       2, 2, float_cmp ( >= )
+    ; "<=",       2, 2, float_cmp ( <= )
+    ; ">",        2, 2, float_cmp ( > )
+    ; "<",        2, 2, float_cmp ( < )
+    ; "!=",       2, 2, float_cmp ( <> )
+    ; "eq",       2, 2, string_cmp ( = )
+    ; "ge",       2, 2, string_cmp ( >= )
+    ; "le",       2, 2, string_cmp ( <= )
+    ; "gt",       2, 2, string_cmp ( > )
+    ; "lt",       2, 2, string_cmp ( < )
+    ; "ne",       2, 2, string_cmp ( <> )
     ; "and",      2, m, expr_bool ( && )
     ; "or",       2, m, expr_bool ( || )
     ; "xor",      2, m, expr_bool (fun l r -> (l || r) && not (l && r))
-    ; "not",      1, 1, not_ ]
+    ; "not",      1, 1, unary_bool not ]
